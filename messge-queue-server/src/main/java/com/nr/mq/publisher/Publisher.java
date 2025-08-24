@@ -1,15 +1,15 @@
 package com.nr.mq.publisher;
 
+import com.nr.mq.pb.MessageQueueProtos;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.Socket;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -35,17 +35,21 @@ public class Publisher {
             socket = new Socket(SERVER_ADDRESS, SERVER_PORT);
             log.info("Connected to TCP server at {}:{}", SERVER_ADDRESS, SERVER_PORT);
 
-            PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
-            BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            OutputStream outputStream = socket.getOutputStream();
+            InputStream inputStream = socket.getInputStream();
 
             // Schedule a task to send a message every 5 seconds
             scheduler.scheduleAtFixedRate(() -> {
                 try {
-                    String message = "Action=PUBLISH~SEP~Content=Hello from Publisher";
-                    log.info("Sending message: {}", message);
-                    writer.println(message);
+                    MessageQueueProtos.ClientRequest request = MessageQueueProtos.ClientRequest.newBuilder()
+                            .setAction("PUBLISH")
+                            .setContent("Hello from Publisher")
+                            .build();
 
-                    String response = reader.readLine();
+                    log.info("Sending message: {}", request);
+                    request.writeTo(outputStream);
+
+                    MessageQueueProtos.ClientResponse response = MessageQueueProtos.ClientResponse.parseFrom(inputStream);
                     log.info("Received response: {}", response);
 
                 } catch (IOException e) {

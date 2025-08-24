@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package com.nr.mq.pb;
+
+option java_multiple_files = true;
+option java_package = "com.nr.mq.protobuf";
+option java_outer_classname = "MessageQueueProtos";
+
+message ClientRequest {
+    string action = 1;
+    optional string content = 2;
+    optional string clientId = 3;
+    optional string messageId = 4;
+    optional int64 leaseExpiredAt = 5;
+}
+
+message Message {
+    string messageId = 1;
+    string message = 2;
+}
+
+message Error {
+    int32 code = 1;
+    string message = 2;
+}
+
+message ClientResponse {
+    optional Error error = 1;
+    repeated Message messages = 2;
+    optional string clientId = 3;
+    optional int64 leaseExpiredAt = 4;
+}
