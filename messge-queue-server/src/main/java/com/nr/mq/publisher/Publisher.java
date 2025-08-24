@@ -24,6 +24,7 @@ public class Publisher {
     private static final int SERVER_PORT = 8085;
     private static final long PUBLISH_INTERVAL_SECONDS = 5;
 
+    private Socket socket;
     private ScheduledExecutorService scheduler;
 
     @PostConstruct
@@ -31,7 +32,7 @@ public class Publisher {
         scheduler = Executors.newSingleThreadScheduledExecutor();
 
         try {
-            Socket socket = new Socket(SERVER_ADDRESS, SERVER_PORT);
+            socket = new Socket(SERVER_ADDRESS, SERVER_PORT);
             log.info("Connected to TCP server at {}:{}", SERVER_ADDRESS, SERVER_PORT);
 
             PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
@@ -63,6 +64,15 @@ public class Publisher {
 
     @PreDestroy
     public void stop() {
+        if (socket != null && socket.isConnected()) {
+            try {
+                log.info("Closing TCP server at {}:{}", SERVER_ADDRESS, SERVER_PORT);
+                socket.close();
+            } catch (IOException e) {
+                log.error("Could not close TCP server at {}:{}", SERVER_ADDRESS, SERVER_PORT);
+                throw new RuntimeException(e);
+            }
+        }
         if (scheduler != null && !scheduler.isShutdown()) {
             log.info("Shutting down publisher scheduler");
             scheduler.shutdown();
