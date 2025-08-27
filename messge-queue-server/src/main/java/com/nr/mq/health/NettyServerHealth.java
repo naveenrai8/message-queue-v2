@@ -1,20 +1,22 @@
 package com.nr.mq.health;
 
-import com.nr.mq.server.TCPServer;
+import com.nr.mq.server.NettyServer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
+import org.springframework.stereotype.Component;
 
+@Component
 @RequiredArgsConstructor
-public class TCPServerHealth implements HealthIndicator {
+public class NettyServerHealth implements HealthIndicator {
 
-    private final TCPServer tcpServer;
+    private final NettyServer nettyServer;
 
     @Override
     public Health health() {
-        if (tcpServer.isRunning()) {
+        if (!nettyServer.getBossGroup().isShutdown()) {
             return Health.up()
-                    .withDetail("Server is running", tcpServer.isRunning())
+                    .withDetail("Server is running", !nettyServer.getBossGroup().isShutdown())
                     .build();
         }
         return Health.down().build();
