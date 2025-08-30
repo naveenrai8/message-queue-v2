@@ -9,7 +9,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.nr</groupId>
-    <artifactId>messge-queue-server</artifactId>
+    <artifactId>message-queue-server</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>message-queue-server</name>
     <description>message-queue-server</description>
